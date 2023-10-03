@@ -1,5 +1,11 @@
 #include <AccelStepper.h>
 #include <MultiStepper.h>
+#include <ESP32Servo.h>
+
+#define SERVO_PIN 13
+
+int servoInitPos = 0;
+int servoFinalPos = 60;
 // Connections to A4988
 const int dirPinLeft = 26;  // Direction
 const int stepPinLeft = 27; // Step
@@ -21,6 +27,7 @@ bool ran = false;
 int buttonLastState;
 AccelStepper stepperLeft(AccelStepper::DRIVER, stepPinLeft, dirPinLeft);
 AccelStepper stepperRight(AccelStepper::DRIVER, stepPinRight, dirPinRight);
+Servo servoMotor;
 
 MultiStepper steppers;
  
@@ -47,13 +54,21 @@ void setup() {
   buttonLastState = HIGH;
   steppers.addStepper(stepperLeft);
   steppers.addStepper(stepperRight);
+  servoMotor.attach(SERVO_PIN);  // Setting up servo
+  // Initialize servo position
+  servoMotor.write(servoInitPos);
+  delay(1000);
 
 }
 void loop() {
+    servoMotor.write(servoInitPos);
+    delay(1000);
 
   int buttonCurState = digitalRead(buttonPin);
 
   if(buttonLastState == LOW && buttonCurState == HIGH){
+    servoMotor.write(servoInitPos);
+    delay(1000);
     // stepperRight.runToNewPosition(300);
     // stepperRight.runToNewPosition(0);
   long positions[2]; // Array of desired stepper positions
@@ -79,6 +94,8 @@ void loop() {
   positions[1] = 0;
   steppers.moveTo(positions);
   steppers.runSpeedToPosition(); // Blocks until all are in position
+  delay(1000);
+  servoMotor.write(servoFinalPos);
   delay(1000);
 }
   buttonLastState = buttonCurState;
